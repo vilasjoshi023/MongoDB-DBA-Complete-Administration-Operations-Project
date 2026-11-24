@@ -69,13 +69,18 @@ See [Daily Lab Log](daily-work-logs/2026-11-24-mongodb-installation-and-replica-
 **Controlled failover test:** completed. VM1 ran `rs.stepDown(60)`; the command returned `ok: 1`, and VM1's subsequent `db.hello()` showed `isWritablePrimary: false`, `secondary: true`, and `primary: "VILASLAB2:27017"`. VM2 was therefore confirmed as the new PRIMARY at that moment. A fresh post-election `rs.status()` member listing is still needed to verify the full current topology.
 
 See the [daily lab log](daily-work-logs/2026-11-24-mongodb-installation-and-replica-set-preparation.md) for command evidence and next validation steps.
+## Maintenance and upgrade strategy
+
+See [MongoDB Patching and Upgrade Plan](docs/MAINTENANCE-PATCHING-UPGRADE-PLAN.md) for the rolling patch procedure, major-version upgrade gates, backups, FCV, rollback planning and post-change validation.
+
 ## Repository layout
 
 ```text
 .
 ├── README.md
 ├── docs/
-│   └── DBA-ROLE-AND-RESPONSIBILITIES.md
+│   ├── DBA-ROLE-AND-RESPONSIBILITIES.md
+│   └── MAINTENANCE-PATCHING-UPGRADE-PLAN.md
 ├── daily-work-logs/
 │   └── 2026-11-24-mongodb-installation-and-replica-set-preparation.md
 ├── practical-labs/
