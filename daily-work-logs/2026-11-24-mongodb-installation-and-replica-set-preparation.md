@@ -401,3 +401,36 @@ The 60-second step-down period makes VM1 ineligible to become PRIMARY during tha
 A primary step-down can interrupt writes until a new primary is elected. In-flight writes/transactions may fail and applications should use appropriate retry handling. This lab test was performed in an isolated learning environment.
 
 MongoDB reference: https://www.mongodb.com/docs/v7.0/reference/command/replsetstepdown/
+
+
+## 16. Priority-based PRIMARY re-election – verified
+
+After the 60-second step-down period, the user shared a fresh member-state listing:
+
+```text
+VILASLAB1:27017 : PRIMARY : health=1
+VILASLAB2:27017 : SECONDARY : health=1
+VILASLAB3:27017 : SECONDARY : health=1
+```
+
+The accompanying `db.hello()` output on VM1 included:
+
+```javascript
+isWritablePrimary: true,
+secondary: false,
+primary: "VILASLAB1:27017",
+me: "VILASLAB1:27017"
+```
+
+The election ID had advanced from the earlier election, confirming a subsequent election term/ID change. VM1, configured with priority 2, had regained PRIMARY after the step-down period elapsed. VM2 and VM3 were again SECONDARY in the supplied output.
+
+**Learning outcome:** The controlled step-down demonstrated temporary PRIMARY relinquishment and election of VM2. The follow-up output demonstrated that the higher-priority VM1 could later regain PRIMARY. This is expected behavior for the configured priorities and is not evidence of a failure.
+
+## 17. Patching and upgrade planning – next module
+
+The next project module is MongoDB maintenance planning:
+- Patch-level updates within the 7.0 release series, using a rolling procedure one replica-set member at a time.
+- Separate major-version upgrade planning, including compatibility checks, backup/restore readiness, FCV review, driver/application validation, and vendor-supported operating-system verification.
+- Maintenance-window, rollback, monitoring and post-change validation checklists.
+
+No package upgrade or version change has been executed as part of this planning entry.
