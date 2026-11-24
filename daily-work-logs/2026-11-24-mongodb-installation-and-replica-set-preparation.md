@@ -161,26 +161,41 @@ Both checks returned a successful TCP connection. This confirms reachability fro
 - VM1 could reach VM2 and VM3 on TCP 27017.
 - MongoDB services were running and local ping checks succeeded on the nodes where evidence was shared.
 
-### Still to verify before initialization
+### Pre-initialization checks – user confirmed completed
 
-1. Confirm actual hostnames on VM2 and VM3 with `hostname`.
-2. Confirm name resolution on all three VMs, for example through consistent `/etc/hosts` entries:
-   ```text
-   192.168.62.128 VILASLAB1
-   192.168.62.131 VILASLAB2
-   192.168.62.132 VILASLAB3
-   ```
-3. Verify `getent hosts VILASLAB1`, `getent hosts VILASLAB2`, and `getent hosts VILASLAB3` on every node.
-4. Inspect the active `/etc/mongod.conf` on all three nodes and confirm each node binds to its own correct IP and has `replication.replSetName: rs0`.
-5. Verify TCP connectivity by hostname, including member-to-member reachability as required.
-6. Check time synchronization and ensure all nodes have compatible MongoDB configuration/version.
-7. Before production-style use, plan internal authentication (keyfile or x.509), user authentication, TLS, and secrets management.
+The user confirmed that hostname correction and the preceding three-node configuration checks were completed. The earlier checks included hostname resolution, MongoDB configuration review, and port connectivity validation.
 
-### Initialization – not confirmed completed
+### Replica-set initialization – confirmed completed
 
-The latest confirmed progress in the discussion did not include a successful `rs.initiate()` result. Do not mark the replica set initialized or claim PRIMARY/SECONDARY status until actual command output confirms it.
+The user subsequently shared the following command output from the MongoDB shell on VM1:
 
-After all checks above and only if the replica set has not already been initiated, initialization may be performed from VM1:
+```javascript
+rs.status().members.forEach(m => {
+  print(m.name + " : " + m.stateStr)
+})
+```
+
+Observed output:
+
+```text
+VILASLAB1:27017 : PRIMARY
+VILASLAB2:27017 : SECONDARY
+VILASLAB3:27017 : SECONDARY
+```
+
+This verifies that all three configured members reached the intended PRIMARY/SECONDARY states at the time of the check. The shell prompt was `rs0 [direct: primary]`, also consistent with VM1 being the primary.
+
+The user has not yet shared a full `rs.status()`, `rs.conf()`, or `db.hello()` output. Those additional checks remain useful, but are not required to record the member-state result shown above.
+
+### Next validation – data replication
+
+The next practical exercise is to write a test document on the primary and read it from each secondary using a secondary read preference. Do not use production data for this lab. Continue with the commands in the next practical lesson.
+
+### Production security follow-up
+
+Before production-style use, plan internal authentication (keyfile or x.509), user authentication, TLS, and secrets management.
+
+After all preflight checks, initialization was performed from VM1. The member-state output above is the evidence for the resulting cluster state.
 
 ```javascript
 rs.initiate({
@@ -224,6 +239,18 @@ Expected steady-state design: VM1 PRIMARY and VM2/VM3 SECONDARY. Actual election
 - Add internal authentication and user authentication before treating the lab as a secured deployment.
 - Capture exact command outputs and add them to this repository.
 
-## 10. Evidence and accuracy note
+## 10. Replica-set validation evidence
+
+**Verified member states shared by the user:**
+
+```text
+VILASLAB1:27017 : PRIMARY
+VILASLAB2:27017 : SECONDARY
+VILASLAB3:27017 : SECONDARY
+```
+
+**Outcome:** The three-node replica set `rs0` is initialized and all three members are reported in the expected steady states. This establishes successful replica-set formation and election at the time of the captured output. A separate data replication read/write test is the next validation step.
+
+## 11. Evidence and accuracy note
 
 This log was assembled from the command outputs and troubleshooting details shared in the working conversation on 24 November 2026. Where a complete output or final configuration was not provided, the item is explicitly marked as pending verification rather than recorded as successful.
