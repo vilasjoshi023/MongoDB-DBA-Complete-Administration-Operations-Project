@@ -254,3 +254,83 @@ VILASLAB3:27017 : SECONDARY
 ## 11. Evidence and accuracy note
 
 This log was assembled from the command outputs and troubleshooting details shared in the working conversation on 24 November 2026. Where a complete output or final configuration was not provided, the item is explicitly marked as pending verification rather than recorded as successful.
+
+
+## 12. Replica-set health and majority-write validation
+
+**Date/time of evidence:** 24 November 2026, approximately 12:56–13:01 India time, based on the supplied shell output.
+
+### Replica-set status evidence
+
+The user shared `rs.status()` output with:
+
+- `set: rs0`
+- `myState: 1`
+- `majorityVoteCount: 2`
+- `writeMajorityCount: 2`
+- `votingMembersCount: 3`
+- All three members reported `health: 1`.
+- VM1 reported `PRIMARY`; VM2 and VM3 reported `SECONDARY`.
+- Both secondaries reported VM1 as their sync source.
+- The three members showed matching optime timestamps in the supplied status output.
+
+### Replica-set configuration evidence
+
+The shared `rs.conf()` output confirmed:
+
+| Member | Host | Priority | Votes |
+|---|---|---:|---:|
+| 0 | VILASLAB1:27017 | 2 | 1 |
+| 1 | VILASLAB2:27017 | 1 | 1 |
+| 2 | VILASLAB3:27017 | 1 | 1 |
+
+The replica-set name is `rs0`. The configuration uses protocol version 1 and majority journaling default is enabled.
+
+### Majority write test
+
+The user created a test document in database `replication_lab`, collection `replication_test`, with the following ID:
+
+```text
+6b053cc5400f7806aabc2d82
+```
+
+The insert command returned:
+
+```javascript
+{
+  n: 1,
+  ok: 1
+}
+```
+
+The command specified `writeConcern: { w: "majority", wtimeout: 10000 }`. This confirms the write was acknowledged by a voting majority.
+
+### Secondary lag evidence
+
+The user shared `rs.printSecondaryReplicationInfo()` output reporting:
+
+```text
+VILASLAB2:27017  replLag: 0 secs
+VILASLAB3:27017  replLag: 0 secs
+```
+
+This indicates no lag was reported at the time of that check.
+
+### Read verification – pending
+
+The user connected directly to VM2 and VM3 using a URI with `readPreference=secondary`. Both shell prompts showed `[direct: secondary]`.
+
+The subsequent query was entered with each chained expression on separate shell submissions, resulting in `Invalid REPL keyword` for the lines beginning with a dot. Therefore, the test document has **not yet been explicitly read back from either secondary**.
+
+The pasted `db.hello()` output included `me: 'VILASLAB1:27017'` and `isWritablePrimary: true`; it is evidence for VM1, not for VM2 or VM3.
+
+### Next validation command
+
+On VM2 and then VM3, while connected directly to the respective secondary, run the entire command as a single line:
+
+```javascript
+db.getSiblingDB("replication_lab").replication_test.find({_id: ObjectId("6b053cc5400f7806aabc2d82")}).pretty()
+```
+
+Expected result: exactly the inserted document is returned by each secondary. If no document appears immediately, wait briefly and retry, then inspect replication status before diagnosing.
+
