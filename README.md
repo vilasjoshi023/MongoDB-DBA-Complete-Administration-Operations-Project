@@ -64,16 +64,11 @@ See [Daily Lab Log](daily-work-logs/2026-11-24-mongodb-installation-and-replica-
 
 ### Replica-set work status
 
-<escape>**Initialized and verified:**</escape> the user shared member-state output confirming:
+**Replica-set formation and replication test:** completed. VM1 was confirmed PRIMARY, VM2/VM3 SECONDARY, a majority-acknowledged test document was inserted on the primary, and the user confirmed that the document was visible on both secondaries.
 
-```text
-VILASLAB1:27017 : PRIMARY
-VILASLAB2:27017 : SECONDARY
-VILASLAB3:27017 : SECONDARY
-```
+**Controlled failover test:** completed. VM1 ran `rs.stepDown(60)`; the command returned `ok: 1`, and VM1's subsequent `db.hello()` showed `isWritablePrimary: false`, `secondary: true`, and `primary: "VILASLAB2:27017"`. VM2 was therefore confirmed as the new PRIMARY at that moment. A fresh post-election `rs.status()` member listing is still needed to verify the full current topology.
 
-The next exercise is to validate actual document replication by writing on the primary and reading from both secondaries. See the [daily lab log](daily-work-logs/2026-11-24-mongodb-installation-and-replica-set-preparation.md).
-
+See the [daily lab log](daily-work-logs/2026-11-24-mongodb-installation-and-replica-set-preparation.md) for command evidence and next validation steps.
 ## Repository layout
 
 ```text
