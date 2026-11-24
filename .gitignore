@@ -1,0 +1,26 @@
+# Credentials and sensitive files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+mongod-keyfile
+*.secret
+.env
+.env.*
+
+# Database files and local artifacts
+data/
+journal/
+*.wt
+*.bson
+*.archive
+*.dump
+*.log
+*.pid
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
