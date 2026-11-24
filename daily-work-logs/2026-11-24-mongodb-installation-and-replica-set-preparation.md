@@ -316,21 +316,38 @@ VILASLAB3:27017  replLag: 0 secs
 
 This indicates no lag was reported at the time of that check.
 
-### Read verification – pending
+### Read verification – completed
 
-The user connected directly to VM2 and VM3 using a URI with `readPreference=secondary`. Both shell prompts showed `[direct: secondary]`.
+The user confirmed that the inserted test document was visible on **both VM2 and VM3** when queried directly from the secondary members.
 
-The subsequent query was entered with each chained expression on separate shell submissions, resulting in `Invalid REPL keyword` for the lines beginning with a dot. Therefore, the test document has **not yet been explicitly read back from either secondary**.
+The document ID was:
 
-The pasted `db.hello()` output included `me: 'VILASLAB1:27017'` and `isWritablePrimary: true`; it is evidence for VM1, not for VM2 or VM3.
-
-### Next validation command
-
-On VM2 and then VM3, while connected directly to the respective secondary, run the entire command as a single line:
-
-```javascript
-db.getSiblingDB("replication_lab").replication_test.find({_id: ObjectId("6b053cc5400f7806aabc2d82")}).pretty()
+```text
+6b053cc5400f7806aabc2d82
 ```
 
-Expected result: exactly the inserted document is returned by each secondary. If no document appears immediately, wait briefly and retry, then inspect replication status before diagnosing.
+The earlier secondary sessions showed the `[direct: secondary]` prompt. The initial multiline query attempt produced `Invalid REPL keyword` because the chained expression was submitted across separate shell commands; the query was then run as a complete command and the user confirmed the document was returned on both secondaries.
 
+**Outcome:** End-to-end test document replication from VM1 PRIMARY to VM2 and VM3 SECONDARY is verified by the user's confirmation.
+
+
+
+
+## 13. End-to-end replication test – completed
+
+The user confirmed that the test document with ID `6b053cc5400f7806aabc2d82` was visible on both VM2 and VM3 when read directly from the secondary members.
+
+**Validated flow:**
+
+```text
+VM1 (PRIMARY)
+  write: replication_lab.replication_test
+        |
+        +---- replication ----> VM2 (SECONDARY) - document visible
+        |
+        +---- replication ----> VM3 (SECONDARY) - document visible
+```
+
+**Result:** Three-node replica-set formation, majority-acknowledged insert, zero reported secondary lag at the recorded check, and read-back from both secondaries have all been verified in the lab.
+
+**Next lab:** Perform a controlled PRIMARY step-down and observe the election of a new PRIMARY. This will be documented separately with actual output and timing. Keep this as a lab-only exercise; do not run it against production or any workload that cannot tolerate a brief election and write interruption.
