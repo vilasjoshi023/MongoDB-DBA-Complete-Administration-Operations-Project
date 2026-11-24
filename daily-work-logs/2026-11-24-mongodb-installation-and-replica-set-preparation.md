@@ -361,3 +361,43 @@ After correcting the mongosh multiline input approach, the user confirmed that t
 
 This closes the end-to-end data replication validation: the majority-acknowledged write on VM1 was subsequently read from both secondary members.
 
+
+
+## 15. Controlled PRIMARY step-down and election – successful
+
+**Exercise:** On VM1, after confirming that both secondaries were healthy and reported zero replication lag, the user ran:
+
+```javascript
+rs.stepDown(60)
+```
+
+The command returned `{ ok: 1 }`. The shell prompt changed from `[direct: primary]` to `[direct: secondary]`.
+
+The user then ran `db.hello()` on the same direct VM1 connection. The returned fields included:
+
+```javascript
+isWritablePrimary: false,
+secondary: true,
+primary: "VILASLAB2:27017",
+me: "VILASLAB1:27017"
+```
+
+### Verified outcome
+
+- VM1 successfully stepped down from PRIMARY to SECONDARY.
+- VM2 was identified by VM1's `db.hello()` response as the new PRIMARY.
+- VM1's direct connection correctly reported that it was not writable PRIMARY.
+- The command used the default non-forced step-down behavior.
+- This was a planned step-down exercise, not an unplanned VM/process/network failure simulation.
+
+### Remaining verification
+
+The supplied `db.hello()` output confirms VM2 as the new PRIMARY at that moment. The user has not yet shared a fresh `rs.status()` member listing after the election; obtain it to verify VM3's current member state and the complete post-election topology.
+
+The 60-second step-down period makes VM1 ineligible to become PRIMARY during that interval. After that period it can become eligible again. Because VM1 has configured priority 2 while VM2 and VM3 have priority 1, observe whether VM1 later regains PRIMARY through a priority-based election; do not assume VM2 will remain PRIMARY after the period expires.
+
+### Operational caution
+
+A primary step-down can interrupt writes until a new primary is elected. In-flight writes/transactions may fail and applications should use appropriate retry handling. This lab test was performed in an isolated learning environment.
+
+MongoDB reference: https://www.mongodb.com/docs/v7.0/reference/command/replsetstepdown/
