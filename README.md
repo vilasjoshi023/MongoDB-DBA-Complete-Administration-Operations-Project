@@ -64,7 +64,15 @@ See [Daily Lab Log](daily-work-logs/2026-11-24-mongodb-installation-and-replica-
 
 ### Replica-set work status
 
-Replica-set configuration and network readiness were being prepared. Hostname resolution and all three nodes' final `mongod.conf` settings still need confirmation before initialization. The latest confirmed state does **not** establish that `rs.initiate()` has been run or that PRIMARY/SECONDARY states have been achieved. See the daily log for the safe next steps.
+<escape>**Initialized and verified:**</escape> the user shared member-state output confirming:
+
+```text
+VILASLAB1:27017 : PRIMARY
+VILASLAB2:27017 : SECONDARY
+VILASLAB3:27017 : SECONDARY
+```
+
+The next exercise is to validate actual document replication by writing on the primary and reading from both secondaries. See the [daily lab log](daily-work-logs/2026-11-24-mongodb-installation-and-replica-set-preparation.md).
 
 ## Repository layout
 
