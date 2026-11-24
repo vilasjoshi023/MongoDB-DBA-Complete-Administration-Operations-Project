@@ -351,3 +351,13 @@ VM1 (PRIMARY)
 **Result:** Three-node replica-set formation, majority-acknowledged insert, zero reported secondary lag at the recorded check, and read-back from both secondaries have all been verified in the lab.
 
 **Next lab:** Perform a controlled PRIMARY step-down and observe the election of a new PRIMARY. This will be documented separately with actual output and timing. Keep this as a lab-only exercise; do not run it against production or any workload that cannot tolerate a brief election and write interruption.
+
+
+## 14. Secondary read-back confirmation – completed
+
+After correcting the mongosh multiline input approach, the user confirmed that the inserted test document was visible on **both VM2 and VM3** when queried directly from the respective SECONDARY members.
+
+**Document ID:** `6b053cc5400f7806aabc2d82`
+
+This closes the end-to-end data replication validation: the majority-acknowledged write on VM1 was subsequently read from both secondary members.
+
