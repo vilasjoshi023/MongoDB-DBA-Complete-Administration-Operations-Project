@@ -434,3 +434,17 @@ The next project module is MongoDB maintenance planning:
 - Maintenance-window, rollback, monitoring and post-change validation checklists.
 
 No package upgrade or version change has been executed as part of this planning entry.
+
+
+## 18. Patching and upgrade plan prepared
+
+A dedicated maintenance runbook was added at `docs/MAINTENANCE-PATCHING-UPGRADE-PLAN.md`.
+
+Key planning conclusions as at 24 November 2026:
+- Current lab server version is MongoDB 7.0.48.
+- MongoDB 7.0.48 is the latest publicly announced self-managed patch verified for this planning entry.
+- MongoDB 7.0.49 is listed as Atlas Only in the 7.0 release notes; no self-managed 7.0.49 package upgrade is planned.
+- The next major-version learning path is a separately staged rolling upgrade from 7.0 to 8.0, subject to exact platform/repository, application compatibility, backup/restore and FCV checks.
+- No package patch or major-version upgrade was executed while preparing this plan.
+
+The runbook covers pre-change inventory, package discovery and transaction preview, backup/restore validation, one-member-at-a-time rolling sequence, FCV controls, post-upgrade acceptance criteria, rollback/recovery and a DBA change checklist.
